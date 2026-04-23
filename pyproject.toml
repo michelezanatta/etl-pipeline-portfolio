@@ -1,0 +1,23 @@
+[project]
+name = "etl-pipeline-portfolio"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "michelezanatta",email = "michelezanatta07@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas (>=3.0.2,<4.0.0)",
+    "numpy (>=2.4.4,<3.0.0)",
+    "requests (>=2.33.1,<3.0.0)",
+    "duckdb (>=1.5.2,<2.0.0)",
+    "jupyter (>=1.1.1,<2.0.0)",
+    "ipykernel (>=7.2.0,<8.0.0)",
+    "dbt-duckdb (>=1.10.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
