@@ -2,9 +2,44 @@ import requests
 import pandas as pd
 import logging
 from datetime import datetime
+import argparse
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="ETL pipeline for weather data"
+    )
+
+    parser.add_argument(
+        "--local-store", 
+        type=bool, 
+        required=True, 
+        default=False, 
+        help="Store in local output path")
+
+    parser.add_argument(
+        "--output-path",
+        type=str,
+        required=True,
+        help="Path to save results"
+    )
+
+    return parser.parse_args()
+
+def ensure_dir(path: str | Path) -> Path:
+    logger.info("Checking if output path exists and is a directory")
+    p = Path(path)
+
+    if p.exists() and not p.is_dir():
+        raise ValueError(f"Path exists but is not a directory: {p}")
+
+    p.mkdir(parents=True, exist_ok=True)
+    return p
 
 def define_type(time, today):
     if time <= today:
@@ -64,7 +99,27 @@ def fetch_weather(latitude=41.90, longitude=12.49, days=7):
 
     return df_hourly_past, df_hourly_forecast, df_daily_past, df_daily_forecast
 
+
+# python3 "src/extract.py" --local-store True --output-path rsc/data/raw_data  
 if __name__ == "__main__":
+    logger.info("Parsing arguments")
+    args = parse_args()
+
+    
     logger.info("Starting weather data extraction")
     df_hourly_past, df_hourly_forecast, df_daily_past, df_daily_forecast = fetch_weather()
     logger.info("Weather data extraction completed successfully")
+
+    output_path = args.output_path
+    local_store = args.local_store
+    if local_store:
+        ensure_dir(output_path)
+
+        logger.info(f"Storing raw dataset in {output_path}")
+        df_hourly_past.to_parquet(output_path + "/df_hourly_past.parquet")
+        df_hourly_forecast.to_parquet(output_path + "/df_hourly_forecast.parquet")
+        df_daily_past.to_parquet(output_path + "/df_daily_past.parquet")
+        df_daily_forecast.to_parquet(output_path + "/df_daily_forecast.parquet")
+
+
+
