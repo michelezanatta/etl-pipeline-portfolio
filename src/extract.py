@@ -8,7 +8,6 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(
