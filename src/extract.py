@@ -8,6 +8,12 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
+RAW_FILES = {
+    "hourly_past": "df_hourly_past.parquet",
+    "hourly_forecast": "df_hourly_forecast.parquet",
+    "daily_past": "df_daily_past.parquet",
+    "daily_forecast": "df_daily_forecast.parquet",
+}
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -16,10 +22,8 @@ def parse_args():
 
     parser.add_argument(
         "--local-store", 
-        type=bool, 
-        required=True, 
-        default=False, 
-        help="Store in local output path")
+        action="store_true", 
+        help="Write Parquet files locally")
 
     parser.add_argument(
         "--output-path",
@@ -98,8 +102,35 @@ def fetch_weather(latitude=41.90, longitude=12.49, days=7):
 
     return df_hourly_past, df_hourly_forecast, df_daily_past, df_daily_forecast
 
+def extract_to_parquet(
+    raw_dir: str | Path,
+    latitude: float = 41.90,
+    longitude: float = 12.49,
+    days: int = 7,
+) -> dict[str, Path]:
+    raw_dir = ensure_dir(raw_dir)
 
-# python3 "src/extract.py" --local-store True --output-path rsc/data/raw_data  
+    df_hourly_past, df_hourly_forecast, df_daily_past, df_daily_forecast = fetch_weather(
+        latitude=latitude,
+        longitude=longitude,
+        days=days,
+    )
+
+    outputs = {
+        "hourly_past": raw_dir / RAW_FILES["hourly_past"],
+        "hourly_forecast": raw_dir / RAW_FILES["hourly_forecast"],
+        "daily_past": raw_dir / RAW_FILES["daily_past"],
+        "daily_forecast": raw_dir / RAW_FILES["daily_forecast"],
+    }
+
+    df_hourly_past.to_parquet(outputs["hourly_past"])
+    df_hourly_forecast.to_parquet(outputs["hourly_forecast"])
+    df_daily_past.to_parquet(outputs["daily_past"])
+    df_daily_forecast.to_parquet(outputs["daily_forecast"])
+
+    return outputs
+
+# python3 "src/extract.py" --local-store --output-path rsc/data/raw_data  
 if __name__ == "__main__":
     logger.info("Parsing arguments")
     args = parse_args()
@@ -111,14 +142,8 @@ if __name__ == "__main__":
 
     output_path = args.output_path
     local_store = args.local_store
-    if local_store:
-        ensure_dir(output_path)
-
-        logger.info(f"Storing raw dataset in {output_path}")
-        df_hourly_past.to_parquet(output_path + "/df_hourly_past.parquet")
-        df_hourly_forecast.to_parquet(output_path + "/df_hourly_forecast.parquet")
-        df_daily_past.to_parquet(output_path + "/df_daily_past.parquet")
-        df_daily_forecast.to_parquet(output_path + "/df_daily_forecast.parquet")
+    if args.local_store:
+        extract_to_parquet(args.output_path)
 
 
 

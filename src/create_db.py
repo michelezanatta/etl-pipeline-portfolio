@@ -23,16 +23,8 @@ def parse_args():
 
     return parser.parse_args()
 
-# python3 "src/create_db.py" --db-path "data/weather.duckdb"
-if __name__ == "__main__":
-    logger.info("Parsing arguments")
-    args = parse_args()
-
-
-    db_path = args.db_path
-    logger.info(f"DB path {db_path}")
-
-
+def ensure_schema(db_path: str | Path) -> None:
+    db_path = str(db_path)
     logger.info("Connecting with database")
     conn = duckdb.connect(db_path)
     logger.info("Connection valid")
@@ -138,3 +130,19 @@ if __name__ == "__main__":
     logger.info(f"Query completed.")
 
     conn.close()
+
+
+
+
+# python3 "src/create_db.py" --db-path "data/weather.duckdb"
+if __name__ == "__main__":
+    logger.info("Parsing arguments")
+    args = parse_args()
+
+    db_path = args.db_path
+    logger.info(f"DB path {db_path}")
+
+    ensure_schema(db_path=db_path)
+
+
+    
