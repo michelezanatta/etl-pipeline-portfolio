@@ -10,6 +10,12 @@ import os
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
+PROC_FILES = {
+    "hourly_past": "df_hourly_past.parquet",
+    "hourly_forecast": "df_hourly_forecast.parquet",
+    "daily_past": "df_daily_past.parquet",
+    "daily_forecast": "df_daily_forecast.parquet",
+}
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -94,25 +100,16 @@ def upsert_weather_daily(con: duckdb.DuckDBPyConnection, df, table_name: str):
             ingested_at = now();
     """)
 
+def load_dir_to_duckdb(proc_dir: str | Path, db_path: str | Path) -> None:
+    proc_dir = Path(proc_dir)
+    if not proc_dir.exists() or not proc_dir.is_dir():
+        raise ValueError(f"Processed dir does not exist or is not a directory: {proc_dir}")
 
-
-# python3 "src/load.py" --db-path "data/weather.duckdb" --input-path "rsc/data/proc_data"
-if __name__ == "__main__":
-    logger.info("Parsing arguments")
-    args = parse_args()
-
-    db_path = args.db_path
-    input_path = args.input_path
-
-    if not ensure_dir_exists(input_path):
-        raise ValueError("Directory not existing.")
-
-    logger.info(f"Loading processed dataframes from {input_path}")
-    df_daily_forecast = pd.read_parquet(os.path.join(input_path, "df_daily_forecast.parquet"))
-    df_daily_past = pd.read_parquet(os.path.join(input_path, "df_daily_past.parquet"))
-    df_hourly_forecast = pd.read_parquet(os.path.join(input_path, "df_hourly_forecast.parquet"))
-    df_hourly_past = pd.read_parquet(os.path.join(input_path, "df_hourly_past.parquet"))
-
+    logger.info(f"Loading processed dataframes from {proc_dir}")
+    df_daily_forecast = pd.read_parquet(proc_dir / PROC_FILES["daily_forecast"])
+    df_daily_past = pd.read_parquet(proc_dir / PROC_FILES["daily_past"])
+    df_hourly_forecast = pd.read_parquet(proc_dir / PROC_FILES["hourly_forecast"])
+    df_hourly_past = pd.read_parquet(proc_dir / PROC_FILES["hourly_past"])
     logger.info("Loading process completed.")
 
     logger.info("Connecting with database")
@@ -121,13 +118,17 @@ if __name__ == "__main__":
 
     upsert_weather_hourly(conn, df_hourly_past, "weather_hourly_past")
     upsert_weather_hourly(conn, df_hourly_forecast, "weather_hourly_forecast")
-
     upsert_weather_daily(conn, df_daily_past, "weather_daily_past")
     upsert_weather_daily(conn, df_daily_forecast, "weather_daily_forecast")
     logger.info("Loading dataframes into tables completed.")
 
     conn.close()
 
+# python3 "src/load.py" --db-path "data/weather.duckdb" --input-path "rsc/data/proc_data"
+if __name__ == "__main__":
+    logger.info("Parsing arguments")
+    args = parse_args()
 
+    load_dir_to_duckdb(args.input_path, args.db_path)
 
 
