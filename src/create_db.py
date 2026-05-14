@@ -23,17 +23,6 @@ def parse_args():
 
     return parser.parse_args()
 
-def ensure_dir(path: str | Path) -> Path:
-    logger.info("Checking if output path exists and is a directory")
-    p = Path(path)
-
-    if p.exists() and not p.is_dir():
-        raise ValueError(f"Path exists but is not a directory: {p}")
-
-    p.mkdir(parents=True, exist_ok=True)
-    return p
-
-
 # python3 "src/create_db.py" --db-path "data/weather.duckdb"
 if __name__ == "__main__":
     logger.info("Parsing arguments")
