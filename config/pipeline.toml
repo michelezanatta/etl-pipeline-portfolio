@@ -1,0 +1,13 @@
+[paths]
+raw_dir = "rsc/data/raw_data"
+proc_dir = "rsc/data/proc_data"
+db_path = "data/weather.duckdb"
+
+[weather]
+latitude = 41.90
+longitude = 12.49
+days = 7
+timezone = "Europe/Rome"
+
+[logging]
+level = "INFO"
