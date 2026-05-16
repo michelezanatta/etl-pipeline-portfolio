@@ -5,6 +5,8 @@ from datetime import datetime
 import argparse
 from pathlib import Path
 
+from utils.paths import ensure_dir
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -33,16 +35,6 @@ def parse_args():
     )
 
     return parser.parse_args()
-
-def ensure_dir(path: str | Path) -> Path:
-    logger.info("Checking if output path exists and is a directory")
-    p = Path(path)
-
-    if p.exists() and not p.is_dir():
-        raise ValueError(f"Path exists but is not a directory: {p}")
-
-    p.mkdir(parents=True, exist_ok=True)
-    return p
 
 def define_type(time, today):
     if time <= today:

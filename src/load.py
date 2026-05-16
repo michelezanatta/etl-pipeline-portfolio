@@ -130,5 +130,3 @@ if __name__ == "__main__":
     args = parse_args()
 
     load_dir_to_duckdb(args.input_path, args.db_path)
-
-
