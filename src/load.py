@@ -1,14 +1,11 @@
-import requests
 import pandas as pd
 import logging
-from datetime import datetime
 import argparse
 from pathlib import Path
 import duckdb
-import os
+from src.utils.logging import configure_logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 PROC_FILES = {
     "hourly_past": "df_hourly_past.parquet",
@@ -37,15 +34,6 @@ def parse_args():
     )
 
     return parser.parse_args()
-
-def ensure_dir_exists(path: str | Path) -> Path:
-    logger.info("Checking if output path exists and is a directory")
-    p = Path(path)
-
-    if p.exists() and not p.is_dir():
-        raise ValueError(f"Path exists but is not a directory: {p}")
-    return True
-
 def upsert_weather_hourly(con: duckdb.DuckDBPyConnection, df, table_name: str):
     # optional but recommended: keep the “latest” record per id
     logger.info(f"Inserting {table_name}")
@@ -124,8 +112,9 @@ def load_dir_to_duckdb(proc_dir: str | Path, db_path: str | Path) -> None:
 
     conn.close()
 
-# python3 "src/load.py" --db-path "data/weather.duckdb" --input-path "rsc/data/proc_data"
+# python3 -m src.load --db-path "data/weather.duckdb" --input-path "rsc/data/proc_data"
 if __name__ == "__main__":
+    configure_logging("INFO")
     logger.info("Parsing arguments")
     args = parse_args()
 

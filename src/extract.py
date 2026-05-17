@@ -5,10 +5,10 @@ from datetime import datetime
 import argparse
 from pathlib import Path
 
-from utils.paths import ensure_dir
+from src.utils.paths import ensure_dir
+from src.utils.logging import configure_logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 RAW_FILES = {
     "hourly_past": "df_hourly_past.parquet",
@@ -122,20 +122,21 @@ def extract_to_parquet(
 
     return outputs
 
-# python3 "src/extract.py" --local-store --output-path rsc/data/raw_data  
+# python3 -m src.extract --local-store --output-path rsc/data/raw_data  
 if __name__ == "__main__":
+    configure_logging("INFO")
     logger.info("Parsing arguments")
     args = parse_args()
-
-    
-    logger.info("Starting weather data extraction")
-    df_hourly_past, df_hourly_forecast, df_daily_past, df_daily_forecast = fetch_weather()
-    logger.info("Weather data extraction completed successfully")
 
     output_path = args.output_path
     local_store = args.local_store
     if args.local_store:
         extract_to_parquet(args.output_path)
+    else:
+        logger.info("Starting weather data extraction")
+        df_hourly_past, df_hourly_forecast, df_daily_past, df_daily_forecast = fetch_weather()
+        logger.info("Weather data extraction completed successfully")
+
 
 
 

@@ -1,13 +1,10 @@
 import duckdb
-import pandas as pd
 import logging
-from datetime import datetime
 import argparse
 from pathlib import Path
+from src.utils.logging import configure_logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -134,8 +131,9 @@ def ensure_schema(db_path: str | Path) -> None:
 
 
 
-# python3 "src/create_db.py" --db-path "data/weather.duckdb"
+# python3 -m src.create_db --db-path "data/weather.duckdb"
 if __name__ == "__main__":
+    configure_logging("INFO")
     logger.info("Parsing arguments")
     args = parse_args()
 

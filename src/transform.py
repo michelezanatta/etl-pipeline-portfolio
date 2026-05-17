@@ -5,10 +5,10 @@ from datetime import datetime
 import logging
 import argparse
 from pathlib import Path
-from utils.paths import ensure_dir
+from src.utils.paths import ensure_dir
+from src.utils.logging import configure_logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 RAW_FILES = {
     "hourly_past": "df_hourly_past.parquet",
@@ -100,8 +100,10 @@ def transform_dir(raw_dir: str | Path, proc_dir: str | Path) -> dict[str, Path]:
 
     return outputs
 
-# python3 "src/transform.py" --input-path rsc/data/raw_data --local-store --output-path rsc/data/proc_data
+# python3 -m src.transform --input-path rsc/data/raw_data --local-store --output-path rsc/data/proc_data
 if __name__ == "__main__":
+    configure_logging("INFO")
+    logger.info("Parsing arguments")
     args = parse_args()
     if args.local_store:
         transform_dir(args.input_path, args.output_path)
