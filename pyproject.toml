@@ -6,7 +6,8 @@ authors = [
     {name = "michelezanatta",email = "michelezanatta07@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.15"
+
 dependencies = [
     "pandas (>=3.0.2,<4.0.0)",
     "numpy (>=2.4.4,<3.0.0)",
@@ -15,7 +16,8 @@ dependencies = [
     "jupyter (>=1.1.1,<2.0.0)",
     "ipykernel (>=7.2.0,<8.0.0)",
     "dbt-duckdb (>=1.10.1,<2.0.0)",
-    "pyarrow (>=24.0.0,<25.0.0)"
+    "pyarrow (>=24.0.0,<25.0.0)",
+    "prefect (>=3.7.1,<4.0.0)"
 ]
 
 
