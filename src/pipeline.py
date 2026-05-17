@@ -59,6 +59,48 @@ def _parse_args():
     p.add_argument("--config", default="config/pipeline.toml", help="Path to pipeline TOML")
     return p.parse_args()
 
+try:
+    from prefect import flow, task
+except ImportError:
+    flow = None
+    task = None
+
+if flow and task:
+    @task
+    def t_extract(config_path: str) -> None:
+        cfg = load_config(config_path)
+        extract_to_parquet(
+            raw_dir=cfg.paths.raw_dir,
+            latitude=cfg.weather.latitude,
+            longitude=cfg.weather.longitude,
+            days=cfg.weather.days,
+        )
+
+    @task
+    def t_transform(config_path: str) -> None:
+        cfg = load_config(config_path)
+        transform_dir(cfg.paths.raw_dir, cfg.paths.proc_dir)
+
+    @task
+    def t_ensure_schema(config_path: str) -> None:
+        cfg = load_config(config_path)
+        ensure_schema(cfg.paths.db_path)
+
+    @task
+    def t_load(config_path: str) -> None:
+        cfg = load_config(config_path)
+        load_dir_to_duckdb(cfg.paths.proc_dir, cfg.paths.db_path)
+
+    @flow(name="weather_etl")
+    def weather_etl_flow(config_path: str = "config/pipeline.toml") -> None:
+        cfg = load_config(config_path)
+        configure_logging(cfg.logging.level)
+
+        t_extract(config_path)
+        t_transform(config_path)
+        t_ensure_schema(config_path)
+        t_load(config_path)
+
 # python3 -m src.pipeline --config config/pipeline.toml
 if __name__ == "__main__":
     args = _parse_args()
